@@ -18,23 +18,46 @@ export default function StartupDetail() {
   const { id } = useParams();
   const { data: ws } = useWorkspace();
   const adapt = (s: ApiStartup) => {
-    const sectors = Array.isArray((s as any).sectors) ? (s as any).sectors : ((s as any).sectors?.value ?? []);
-    const geos = Array.isArray((s as any).geos) ? (s as any).geos : ((s as any).geos?.value ?? []);
-    const one_liner = typeof (s as any).one_liner === 'string' ? (s as any).one_liner : ((s as any).one_liner?.value ?? "");
+    const sectors = Array.isArray((s as any).sectors)
+      ? (s as any).sectors
+      : ((s as any).sectors?.value ?? []);
+    const geos = Array.isArray((s as any).geos)
+      ? (s as any).geos
+      : ((s as any).geos?.value ?? []);
+    const one_liner = typeof (s as any).one_liner === "string"
+      ? (s as any).one_liner
+      : ((s as any).one_liner?.value ?? "");
+
+    // Revenue can be a number or { amount, currency }
+    const revenue = (s as any).traction?.revenue;
+    const arr_usd = typeof revenue === "number" ? revenue : revenue?.amount ?? undefined;
+
+    const growth_pct = (s as any).traction?.growth_rate_percent ?? undefined;
+
+    const preMoney = (s as any).fundraising?.pre_money;
+    const valuation_usd = typeof preMoney === "number" ? preMoney : preMoney?.amount ?? undefined;
+
+    // Founders (optional)
+    const founders = Array.isArray((s as any).founders)
+      ? (s as any).founders.map((f: any) => ({ name: f.name, linkedin: f.linkedin }))
+      : [];
+
     return {
       id: s.id,
       name: (s as any).company_name ?? "",
       logo: undefined,
+      website: (s as any).website,
+      hq_location: (s as any).hq_location,
       sectors,
       geos,
       one_liner,
-      arr_usd: (s as any).traction?.value?.revenue?.amount ?? undefined,
-      growth_pct: (s as any).traction?.value?.growth_rate_percent ?? undefined,
-      valuation_usd: (s as any).fundraising?.value?.pre_money?.amount ?? undefined,
-      founders: [],
-      icp: (s as any).icp ?? (s as any).gtm_strategy?.value ?? undefined,
-      gtm: (s as any).gtm_strategy?.value ?? undefined,
-      stage: (s as any).stage?.value ?? undefined,
+      arr_usd,
+      growth_pct,
+      valuation_usd,
+      founders,
+      icp: (s as any).icp ?? undefined,
+      gtm: (s as any).gtm_strategy ?? undefined,
+      stage: typeof (s as any).stage === "string" ? (s as any).stage : (s as any).stage?.value ?? undefined,
     } as any;
   };
   const wsStartup = ws?.startups?.find((s) => s.id === id);
@@ -46,11 +69,18 @@ export default function StartupDetail() {
     </div>
   );
 
-  const [deckAnalyses, setDeckAnalyses] = useState<DeckAnalysis[]>([]);
+  const initialDeckAnalyses: DeckAnalysis[] = Array.isArray((wsStartup as any)?.deck_analysis)
+    ? ((wsStartup as any).deck_analysis as DeckAnalysis[])
+    : [];
+  const initialToughQs: ToughQ[] = Array.isArray((wsStartup as any)?.qa_investor?.tough_questions)
+    ? ((wsStartup as any).qa_investor.tough_questions as ToughQ[])
+    : [];
+
+  const [deckAnalyses, setDeckAnalyses] = useState<DeckAnalysis[]>(initialDeckAnalyses);
   const [marketSuggested, setMarketSuggested] = useState<string[]>([]);
   const [marketRan, setMarketRan] = useState<MarketRunItem[]>([]);
   const [matchResults, setMatchResults] = useState<Match[]>([]);
-  const [toughQs, setToughQs] = useState<ToughQ[]>([]);
+  const [toughQs, setToughQs] = useState<ToughQ[]>(initialToughQs);
 
   const handleRunDeck = async () => {
     try {
@@ -123,7 +153,7 @@ export default function StartupDetail() {
               )}
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight">{startup.name}</h1>
-                <p className="text-sm text-muted-foreground">{startup.sectors.join(", ")} • {startup.geos.join(", ")}</p>
+                <p className="text-sm text-muted-foreground">{startup.sectors.join(", ")} • {startup.geos.join(", ")}{startup.stage ? ` • ${startup.stage}` : ""}</p>
               </div>
             </div>
 
@@ -135,7 +165,7 @@ export default function StartupDetail() {
                     <ProvenanceBadge extracted={startup.arr_extracted} label="ARR" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl font-semibold">${((startup.arr_usd||0)/1_000_000).toFixed(2)}M</CardContent>
+                <CardContent className="text-xl font-semibold">{typeof startup.arr_usd === 'number' ? `$${(startup.arr_usd/1_000_000).toFixed(2)}M` : "—"}</CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
@@ -144,7 +174,7 @@ export default function StartupDetail() {
                     <ProvenanceBadge extracted={startup.growth_extracted} label="Growth" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl font-semibold">{startup.growth_pct||0}%</CardContent>
+                <CardContent className="text-xl font-semibold">{typeof startup.growth_pct === 'number' ? `${startup.growth_pct}%` : "—"}</CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
@@ -153,7 +183,7 @@ export default function StartupDetail() {
                     <ProvenanceBadge extracted={startup.valuation_extracted} label="Valuation" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-xl font-semibold">${((startup.valuation_usd||0)/1_000_000).toFixed(0)}M</CardContent>
+                <CardContent className="text-xl font-semibold">{typeof startup.valuation_usd === 'number' ? `$${(startup.valuation_usd/1_000_000).toFixed(0)}M` : "—"}</CardContent>
               </Card>
             </div>
 
@@ -330,7 +360,20 @@ export default function StartupDetail() {
 
                   <div className="pt-4">
                     <h4 className="text-sm font-medium">Data Room</h4>
-                    <p className="text-xs text-muted-foreground mt-1">No files uploaded yet.</p>
+                    {Array.isArray((wsStartup as any)?.dataroom) && (wsStartup as any).dataroom.length ? (
+                      <ul className="mt-2 space-y-2">
+                        {(wsStartup as any).dataroom.map((f: any) => (
+                          <li key={f.id} className="text-xs">
+                            <span className="font-medium">{f.kind?.toUpperCase() || 'FILE'}</span>: {f.filename}
+                            {f.url ? (
+                              <a href={f.url} target="_blank" rel="noreferrer" className="ml-2 underline text-primary">View</a>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-1">No files uploaded yet.</p>
+                    )}
                   </div>
                 </div>
               </SheetContent>
