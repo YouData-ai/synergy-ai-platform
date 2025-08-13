@@ -8,7 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProvenanceBadge } from "@/components/ProvenanceBadge";
-
+import { useState } from "react";
+import { api, postJson } from "@/lib/api";
+import type { DeckAnalysis, MarketRunItem, Match, ToughQ, DeckAnalyzeResp, MarketSuggestResp, MarketRunResp, MatchForStartupResp, ToughQAResp } from "@/lib/api-types";
+import { toast } from "@/components/ui/use-toast";
 export default function StartupDetail() {
   const { id } = useParams();
   const startup = startups.find((s) => s.id === id);
@@ -18,6 +21,68 @@ export default function StartupDetail() {
       <main className="container mx-auto py-8">Not found.</main>
     </div>
   );
+
+  const [deckAnalyses, setDeckAnalyses] = useState<DeckAnalysis[]>([]);
+  const [marketSuggested, setMarketSuggested] = useState<string[]>([]);
+  const [marketRan, setMarketRan] = useState<MarketRunItem[]>([]);
+  const [matchResults, setMatchResults] = useState<Match[]>([]);
+  const [toughQs, setToughQs] = useState<ToughQ[]>([]);
+
+  const handleRunDeck = async () => {
+    try {
+      const r = await postJson<DeckAnalyzeResp>(`/api/startups/${startup.id}/deck/analyze`, {});
+      if ((r as any).ok) {
+        const da = (r as any).deck_analysis as DeckAnalysis;
+        setDeckAnalyses((prev) => [da, ...prev]);
+        toast({ description: "Deck analysis added." });
+      }
+    } catch (e: any) {
+      toast({ description: e.message || "Failed to run analysis" });
+    }
+  };
+
+  const handleSuggest = async () => {
+    try {
+      const r = await postJson<MarketSuggestResp>(`/api/startups/${startup.id}/market/suggest`, { n: 6 });
+      if ((r as any).suggested_queries) setMarketSuggested((r as any).suggested_queries);
+      toast({ description: "Suggestions updated." });
+    } catch (e: any) {
+      toast({ description: e.message || "Suggestion failed" });
+    }
+  };
+
+  const handleRunMarket = async () => {
+    try {
+      const r = await postJson<MarketRunResp>(`/api/startups/${startup.id}/market/run`, { topK: 3, maxResults: 6 });
+      if ((r as any).ran) setMarketRan((r as any).ran);
+      toast({ description: "Market run completed." });
+    } catch (e: any) {
+      toast({ description: e.message || "Market run failed" });
+    }
+  };
+
+  const handleFindMatches = async () => {
+    try {
+      const r = await postJson<MatchForStartupResp>(`/api/match/for-startup`, { startup_id: startup.id, topK: 5, with_rationale: true, with_intro: true });
+      if ((r as any).matches) setMatchResults((r as any).matches);
+      toast({ description: "Matches updated." });
+    } catch (e: any) {
+      toast({ description: e.message || "Match failed" });
+    }
+  };
+
+  const handleGenerateQA = async () => {
+    try {
+      const r = await postJson<ToughQAResp>(`/api/startups/${startup.id}/qa/investor`, {});
+      if ((r as any).ok) {
+        toast({ description: "Generated tough questions." });
+      } else {
+        toast({ description: "Q/A request sent." });
+      }
+    } catch (e: any) {
+      toast({ description: e.message || "Failed to generate Q/A" });
+    }
+  };
 
   return (
     <div>
@@ -74,6 +139,7 @@ export default function StartupDetail() {
                 <TabsTrigger value="deck">Deck Analysis</TabsTrigger>
                 <TabsTrigger value="research">Market Research</TabsTrigger>
                 <TabsTrigger value="matches">Matches</TabsTrigger>
+                <TabsTrigger value="investor_prep">Investor Prep</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-4 space-y-6">
@@ -96,28 +162,130 @@ export default function StartupDetail() {
                 )}
               </TabsContent>
 
-              <TabsContent value="deck" className="mt-4">
-                <Card>
-                  <CardContent className="p-4 text-sm text-muted-foreground">
-                    Key findings, improvement areas, and tough questions will appear here after running the Deck Analysis agent.
-                  </CardContent>
-                </Card>
+              <TabsContent value="deck" className="mt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={handleRunDeck}>Run Deck Analysis</Button>
+                  <span className="text-xs text-muted-foreground">Appends a new analysis entry</span>
+                </div>
+                {deckAnalyses.length === 0 ? (
+                  <Card><CardContent className="p-4 text-sm text-muted-foreground">No analyses yet. Click "Run Deck Analysis".</CardContent></Card>
+                ) : (
+                  <div className="grid gap-3">
+                    {deckAnalyses.map((da) => (
+                      <Card key={da.id}>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">Deck Analysis • {new Date(da.created_at).toLocaleString()}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <p className="text-sm">{da.summary}</p>
+                          {da.strengths?.length ? (
+                            <div>
+                              <div className="text-xs font-medium">Strengths</div>
+                              <ul className="text-xs text-muted-foreground list-disc ml-5 mt-1">
+                                {da.strengths.slice(0,5).map((s,i)=>(<li key={i}>{s}</li>))}
+                              </ul>
+                            </div>
+                          ) : null}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </TabsContent>
 
-              <TabsContent value="research" className="mt-4">
-                <Card>
-                  <CardContent className="p-4 text-sm text-muted-foreground">
-                    Market Research Agent summary will be shown here.
-                  </CardContent>
-                </Card>
+              <TabsContent value="research" className="mt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="secondary" onClick={handleSuggest}>Suggest Queries</Button>
+                  <Button size="sm" onClick={handleRunMarket}>Run Top-K</Button>
+                </div>
+                {marketSuggested.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {marketSuggested.map((q) => (<Badge key={q} variant="outline">{q}</Badge>))}
+                  </div>
+                ) : null}
+                {marketRan.length ? (
+                  <div className="space-y-3">
+                    {marketRan.map((item, idx) => (
+                      <Card key={idx}>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">{item.query}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <ul className="text-sm list-disc ml-5">
+                            {item.summary_bullets.slice(0,6).map((b,i)=>(<li key={i}>{b}</li>))}
+                          </ul>
+                          <div className="text-xs text-muted-foreground">Citations:{" "}
+                            {item.citations.map((c,i)=>(
+                              <a key={i} href={c.url} target="_blank" rel="noreferrer" className="underline underline-offset-4 mr-2">{c.title}</a>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : null}
               </TabsContent>
 
-              <TabsContent value="matches" className="mt-4">
-                <Card>
-                  <CardContent className="p-4 text-sm text-muted-foreground">
-                    Ranked investors with detailed breakdown coming soon.
-                  </CardContent>
-                </Card>
+              <TabsContent value="matches" className="mt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={handleFindMatches}>Find Best Matches</Button>
+                </div>
+                {!matchResults.length ? (
+                  <Card><CardContent className="p-4 text-sm text-muted-foreground">Run to see ranked investors.</CardContent></Card>
+                ) : (
+                  <div className="space-y-3">
+                    {matchResults.map((m) => (
+                      <Card key={m.id}>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Badge>{Math.round(m.score)}</Badge>
+                            <span>Investor {m.investor_id}</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {m.matching_reason && <p className="text-sm">{m.matching_reason}</p>}
+                          <div className="flex flex-wrap gap-2">
+                            {typeof m.breakdown.sector === 'number' && <Badge variant="outline">Sector {m.breakdown.sector}</Badge>}
+                            {typeof m.breakdown.stage === 'number' && <Badge variant="outline">Stage {m.breakdown.stage}</Badge>}
+                            {typeof m.breakdown.geo === 'number' && <Badge variant="outline">Geo {m.breakdown.geo}</Badge>}
+                            {typeof m.breakdown.check === 'number' && <Badge variant="outline">Check {m.breakdown.check}</Badge>}
+                            {typeof m.breakdown.thesis_semantic === 'number' && <Badge variant="outline">Thesis {m.breakdown.thesis_semantic}</Badge>}
+                          </div>
+                          {m.intro ? (
+                            <div className="flex items-center gap-2">
+                              <Button size="sm" variant="secondary" onClick={() => { navigator.clipboard.writeText(m.intro!); toast({ description: 'Intro copied' }); }}>Copy Intro</Button>
+                              <span className="text-xs text-muted-foreground truncate">{m.intro}</span>
+                            </div>
+                          ) : null}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="investor_prep" className="mt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={handleGenerateQA}>Generate Tough Q/A</Button>
+                  <span className="text-xs text-muted-foreground">10 questions will be generated by backend.</span>
+                </div>
+                {!toughQs.length ? (
+                  <Card><CardContent className="p-4 text-sm text-muted-foreground">Questions will appear after generation and reload.</CardContent></Card>
+                ) : (
+                  <div className="space-y-3">
+                    {toughQs.map((q, idx) => (
+                      <Card key={idx}>
+                        <CardHeader className="pb-1">
+                          <CardTitle className="text-sm">{q.question}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-xs text-muted-foreground">{q.why_it_matters}</p>
+                          {q.suggested_answer_outline && <p className="text-xs mt-1">{q.suggested_answer_outline}</p>}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </section>
