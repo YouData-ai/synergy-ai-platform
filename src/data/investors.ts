@@ -1,3 +1,5 @@
+import type { Extracted } from "@/types";
+
 export type InvestorProfile = {
   id: string;
   name: string;
@@ -17,7 +19,11 @@ export type InvestorProfile = {
   portfolio_highlights?: { name: string; logo?: string }[];
   contacts?: { name: string; role?: string; linkedin?: string }[];
   match_score?: number;
+  // Extracted provenance-enabled fields (optional)
+  aum_extracted?: Extracted<number>;
+  avg_check_extracted?: Extracted<number>;
 };
+
 
 export const investors: InvestorProfile[] = [
   {
@@ -44,6 +50,20 @@ export const investors: InvestorProfile[] = [
       { name: "Jamie Lee", role: "Partner", linkedin: "https://www.linkedin.com/" },
     ],
     match_score: 87,
+    aum_extracted: {
+      value: 1200000000,
+      confidence: 0.9,
+      sources: [
+        { kind: "file", ref: "Fund Overview.pdf", page_from: 2 },
+      ],
+    },
+    avg_check_extracted: {
+      value: 2500000,
+      confidence: 0.85,
+      sources: [
+        { kind: "url", ref: "https://aurora.vc/faq" },
+      ],
+    },
   },
   {
     id: "inv-banyan",
@@ -68,6 +88,20 @@ export const investors: InvestorProfile[] = [
       { name: "Riya Sharma", role: "MD", linkedin: "https://www.linkedin.com/" },
     ],
     match_score: 74,
+    aum_extracted: {
+      value: 2500000000,
+      confidence: 0.88,
+      sources: [
+        { kind: "file", ref: "Banyan Factsheet.pdf", page_from: 1 },
+      ],
+    },
+    avg_check_extracted: {
+      value: 10000000,
+      confidence: 0.8,
+      sources: [
+        { kind: "url", ref: "https://banyan.capital/investors" },
+      ],
+    },
   },
   {
     id: "inv-nexus",
@@ -85,6 +119,20 @@ export const investors: InvestorProfile[] = [
     check_min_usd: 50000,
     check_max_usd: 500000,
     match_score: 69,
+    aum_extracted: {
+      value: 120000000,
+      confidence: 0.6,
+      sources: [
+        { kind: "url", ref: "https://nexusangels.in/about" },
+      ],
+    },
+    avg_check_extracted: {
+      value: 150000,
+      confidence: 0.7,
+      sources: [
+        { kind: "file", ref: "Nexus Overview.pdf", page_from: 3 },
+      ],
+    },
   },
   {
     id: "inv-orbit",
@@ -98,6 +146,20 @@ export const investors: InvestorProfile[] = [
     stages: ["Seed", "Series A"],
     geos: ["EU", "US"],
     match_score: 81,
+    aum_extracted: {
+      value: 800000000,
+      confidence: 0.77,
+      sources: [
+        { kind: "url", ref: "https://orbitequity.co/funds" },
+      ],
+    },
+    avg_check_extracted: {
+      value: 3000000,
+      confidence: 0.72,
+      sources: [
+        { kind: "file", ref: "LP Deck.pdf", page_from: 5 },
+      ],
+    },
   },
   {
     id: "inv-harbor",
@@ -111,5 +173,20 @@ export const investors: InvestorProfile[] = [
     stages: ["Growth"],
     geos: ["US", "Global"],
     match_score: 65,
+    aum_extracted: {
+      value: 5200000000,
+      confidence: 0.83,
+      sources: [
+        { kind: "file", ref: "Harbor Overview.pdf", page_from: 1 },
+      ],
+    },
+    avg_check_extracted: {
+      value: 20000000,
+      confidence: 0.8,
+      sources: [
+        { kind: "url", ref: "https://harborpartners.com/strategy" },
+      ],
+    },
   },
 ];
+

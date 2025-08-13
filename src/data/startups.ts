@@ -1,3 +1,5 @@
+import type { Extracted } from "@/types";
+
 export type StartupProfile = {
   id: string;
   name: string;
@@ -17,7 +19,12 @@ export type StartupProfile = {
   founders?: { name: string; linkedin?: string }[];
   stage?: string;
   match_score?: number;
+  // Extracted provenance-enabled fields (optional)
+  arr_extracted?: Extracted<number>;
+  growth_extracted?: Extracted<number>;
+  valuation_extracted?: Extracted<number>;
 };
+
 
 export const startups: StartupProfile[] = [
   {
@@ -40,6 +47,28 @@ export const startups: StartupProfile[] = [
     ],
     stage: "Seed",
     match_score: 86,
+    arr_extracted: {
+      value: 1200000,
+      confidence: 0.92,
+      sources: [
+        { kind: "file", ref: "Pitch Deck.pdf", page_from: 7, snippet: "ARR $1.2M as of Q2" },
+        { kind: "url", ref: "https://example.com/press" },
+      ],
+    },
+    growth_extracted: {
+      value: 18,
+      confidence: 0.85,
+      sources: [
+        { kind: "file", ref: "Pitch Deck.pdf", page_from: 8, snippet: "+18% MoM growth" },
+      ],
+    },
+    valuation_extracted: {
+      value: 25000000,
+      confidence: 0.8,
+      sources: [
+        { kind: "file", ref: "Board Update.pdf", page_from: 2, snippet: "$25M pre" },
+      ],
+    },
   },
   {
     id: "st-voyage",
@@ -57,6 +86,27 @@ export const startups: StartupProfile[] = [
     gtm: "Enterprise sales with clinical pilots",
     stage: "Series A",
     match_score: 73,
+    arr_extracted: {
+      value: 3000000,
+      confidence: 0.9,
+      sources: [
+        { kind: "file", ref: "Investor Update.pdf", page_from: 3 },
+      ],
+    },
+    growth_extracted: {
+      value: 12,
+      confidence: 0.7,
+      sources: [
+        { kind: "url", ref: "https://example.com/blog/q2-update" },
+      ],
+    },
+    valuation_extracted: {
+      value: 55000000,
+      confidence: 0.75,
+      sources: [
+        { kind: "file", ref: "Term Sheet.pdf", page_from: 1 },
+      ],
+    },
   },
   {
     id: "st-fleetgo",
@@ -72,6 +122,27 @@ export const startups: StartupProfile[] = [
     premoney_usd: 110000000,
     stage: "Series B",
     match_score: 67,
+    arr_extracted: {
+      value: 5200000,
+      confidence: 0.88,
+      sources: [
+        { kind: "file", ref: "Financials.xlsx" },
+      ],
+    },
+    growth_extracted: {
+      value: 9,
+      confidence: 0.6,
+      sources: [
+        { kind: "url", ref: "https://example.com/fleetgo-news" },
+      ],
+    },
+    valuation_extracted: {
+      value: 120000000,
+      confidence: 0.7,
+      sources: [
+        { kind: "file", ref: "Board Update.pdf", page_from: 5 },
+      ],
+    },
   },
   {
     id: "st-quant",
@@ -87,5 +158,27 @@ export const startups: StartupProfile[] = [
     premoney_usd: 27000000,
     stage: "Seed",
     match_score: 79,
+    arr_extracted: {
+      value: 1800000,
+      confidence: 0.86,
+      sources: [
+        { kind: "file", ref: "Deck.pdf", page_from: 10 },
+      ],
+    },
+    growth_extracted: {
+      value: 22,
+      confidence: 0.82,
+      sources: [
+        { kind: "file", ref: "Deck.pdf", page_from: 11 },
+      ],
+    },
+    valuation_extracted: {
+      value: 30000000,
+      confidence: 0.78,
+      sources: [
+        { kind: "url", ref: "https://example.com/quantshield-announce" },
+      ],
+    },
   },
 ];
+

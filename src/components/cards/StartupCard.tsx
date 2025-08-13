@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 import type { StartupProfile } from "@/data/startups";
 
 export function StartupCard({ startup }: { startup: StartupProfile }) {
@@ -32,11 +33,17 @@ export function StartupCard({ startup }: { startup: StartupProfile }) {
         </div>
         <div className="grid grid-cols-3 gap-3 text-sm">
           <div>
-            <p className="text-muted-foreground">ARR</p>
+            <p className="flex items-center gap-1 text-muted-foreground">
+              <span>ARR</span>
+              <ProvenanceBadge extracted={startup.arr_extracted} label="ARR" />
+            </p>
             <p className="font-medium">${((startup.arr_usd||0)/1_000_000).toFixed(2)}M</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Growth</p>
+            <p className="flex items-center gap-1 text-muted-foreground">
+              <span>Growth</span>
+              <ProvenanceBadge extracted={startup.growth_extracted} label="Growth" />
+            </p>
             <p className="font-medium">{startup.growth_pct || 0}%</p>
           </div>
           <div>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MatchBreakdownDialog } from "@/components/modals/MatchBreakdownDialog";
+import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 import type { InvestorProfile } from "@/data/investors";
 
 export function InvestorCard({ investor }: { investor: InvestorProfile }) {
@@ -45,11 +46,17 @@ export function InvestorCard({ investor }: { investor: InvestorProfile }) {
         </div>
         <div className="grid grid-cols-3 gap-3 text-sm">
           <div>
-            <p className="text-muted-foreground">AUM</p>
+            <p className="flex items-center gap-1 text-muted-foreground">
+              <span>AUM</span>
+              <ProvenanceBadge extracted={(investor as any).aum_extracted} label="AUM" />
+            </p>
             <p className="font-medium">${(investor.aum_usd/1_000_000).toFixed(0)}M</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Avg Check</p>
+            <p className="flex items-center gap-1 text-muted-foreground">
+              <span>Avg Check</span>
+              <ProvenanceBadge extracted={(investor as any).avg_check_extracted} label="Avg Check" />
+            </p>
             <p className="font-medium">${(investor.avg_check_usd/1_000_000).toFixed(2)}M</p>
           </div>
           <div>

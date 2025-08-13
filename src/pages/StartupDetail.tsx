@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 
 export default function StartupDetail() {
   const { id } = useParams();
@@ -38,9 +39,33 @@ export default function StartupDetail() {
             </div>
 
             <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm">ARR</CardTitle></CardHeader><CardContent className="text-xl font-semibold">${((startup.arr_usd||0)/1_000_000).toFixed(2)}M</CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Growth</CardTitle></CardHeader><CardContent className="text-xl font-semibold">{startup.growth_pct||0}%</CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Valuation</CardTitle></CardHeader><CardContent className="text-xl font-semibold">${((startup.valuation_usd||0)/1_000_000).toFixed(0)}M</CardContent></Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-1">
+                    <span>ARR</span>
+                    <ProvenanceBadge extracted={startup.arr_extracted} label="ARR" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xl font-semibold">${((startup.arr_usd||0)/1_000_000).toFixed(2)}M</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-1">
+                    <span>Growth</span>
+                    <ProvenanceBadge extracted={startup.growth_extracted} label="Growth" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xl font-semibold">{startup.growth_pct||0}%</CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-1">
+                    <span>Valuation</span>
+                    <ProvenanceBadge extracted={startup.valuation_extracted} label="Valuation" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xl font-semibold">${((startup.valuation_usd||0)/1_000_000).toFixed(0)}M</CardContent>
+              </Card>
             </div>
 
             <Tabs defaultValue="overview" className="mt-8">
