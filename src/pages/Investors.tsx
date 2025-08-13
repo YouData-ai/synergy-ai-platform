@@ -1,13 +1,44 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { Input } from "@/components/ui/input";
-import { investors } from "@/data/investors";
+import { investors as mockInvestors } from "@/data/investors";
 import { InvestorCard } from "@/components/cards/InvestorCard";
-import { useState } from "react";
-
+import { useState, useMemo } from "react";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import type { Investor as ApiInvestor } from "@/lib/api-types";
+import type { InvestorProfile } from "@/data/investors";
 export default function InvestorsPage() {
+  const { data: ws } = useWorkspace();
   const [q, setQ] = useState("");
-  const filtered = investors.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()));
+
+  const liveInvestors: InvestorProfile[] | null = useMemo(() => {
+    if (!ws?.investors) return null;
+    const adapt = (i: ApiInvestor): InvestorProfile => {
+      const sectors = Array.isArray((i as any).sectors) ? (i as any).sectors : ((i as any).sectors?.value ?? []);
+      const stages = Array.isArray((i as any).stages) ? (i as any).stages : ((i as any).stages?.value ?? []);
+      const geos = Array.isArray((i as any).geos) ? (i as any).geos : ((i as any).geos?.value ?? []);
+      const cs = (i as any).check_size_usd?.value ?? (i as any).check_size_usd ?? undefined;
+      const min = cs?.min?.amount ?? undefined;
+      const max = cs?.max?.amount ?? undefined;
+      const avg_check_usd = typeof min === 'number' && typeof max === 'number' ? Math.round((min + max) / 2) : (min ?? max ?? 0);
+      return {
+        id: i.id,
+        name: i.name,
+        type: "VC",
+        location: geos?.[0] ?? "",
+        aum_usd: 0,
+        avg_check_usd,
+        portfolio_count: 0,
+        focus_areas: sectors ?? [],
+        stages: stages ?? [],
+        geos: geos ?? [],
+      } as InvestorProfile;
+    };
+    return ws.investors.map(adapt);
+  }, [ws]);
+
+  const source = liveInvestors ?? mockInvestors;
+  const filtered = source.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
     <div>

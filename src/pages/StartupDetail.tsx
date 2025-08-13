@@ -1,7 +1,7 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { useParams } from "react-router-dom";
-import { startups } from "@/data/startups";
+import { startups as mockStartups } from "@/data/startups";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,9 +12,33 @@ import { useState } from "react";
 import { api, postJson } from "@/lib/api";
 import type { DeckAnalysis, MarketRunItem, Match, ToughQ, DeckAnalyzeResp, MarketSuggestResp, MarketRunResp, MatchForStartupResp, ToughQAResp } from "@/lib/api-types";
 import { toast } from "@/components/ui/use-toast";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import type { Startup as ApiStartup } from "@/lib/api-types";
 export default function StartupDetail() {
   const { id } = useParams();
-  const startup = startups.find((s) => s.id === id);
+  const { data: ws } = useWorkspace();
+  const adapt = (s: ApiStartup) => {
+    const sectors = Array.isArray((s as any).sectors) ? (s as any).sectors : ((s as any).sectors?.value ?? []);
+    const geos = Array.isArray((s as any).geos) ? (s as any).geos : ((s as any).geos?.value ?? []);
+    const one_liner = typeof (s as any).one_liner === 'string' ? (s as any).one_liner : ((s as any).one_liner?.value ?? "");
+    return {
+      id: s.id,
+      name: (s as any).company_name ?? "",
+      logo: undefined,
+      sectors,
+      geos,
+      one_liner,
+      arr_usd: (s as any).traction?.value?.revenue?.amount ?? undefined,
+      growth_pct: (s as any).traction?.value?.growth_rate_percent ?? undefined,
+      valuation_usd: (s as any).fundraising?.value?.pre_money?.amount ?? undefined,
+      founders: [],
+      icp: (s as any).icp ?? (s as any).gtm_strategy?.value ?? undefined,
+      gtm: (s as any).gtm_strategy?.value ?? undefined,
+      stage: (s as any).stage?.value ?? undefined,
+    } as any;
+  };
+  const wsStartup = ws?.startups?.find((s) => s.id === id);
+  const startup = wsStartup ? adapt(wsStartup as any) : mockStartups.find((s) => s.id === id);
   if (!startup) return (
     <div>
       <Header />

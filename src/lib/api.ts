@@ -1,5 +1,13 @@
+const BASE = "https://2328e41543ab.ngrok-free.app";
+
+function withBase(path: string) {
+  if (/^https?:\/\//.test(path)) return path;
+  if (path.startsWith("/")) return BASE + path;
+  return `${BASE}/${path}`;
+}
+
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(path, {
+  const r = await fetch(withBase(path), {
     headers: { "Content-Type": "application/json" },
     ...init,
   });

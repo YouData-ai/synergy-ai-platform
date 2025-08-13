@@ -1,14 +1,17 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { MetricCard } from "@/components/cards/MetricCard";
-import { investors } from "@/data/investors";
-import { startups } from "@/data/startups";
+import { investors as mockInvestors } from "@/data/investors";
+import { startups as mockStartups } from "@/data/startups";
 import { agents } from "@/data/agents";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
+import { useWorkspace } from "@/hooks/useWorkspace";
 export default function Dashboard() {
+  const { data: ws } = useWorkspace();
+  const invCount = ws?.investors?.length ?? mockInvestors.length;
+  const stCount = ws?.startups?.length ?? mockStartups.length;
   return (
     <div>
       <Seo title="LVX AI Platform — Dashboard" description="Investor & Startup matching and analysis platform." />
@@ -27,9 +30,9 @@ export default function Dashboard() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-4 mt-8">
-          <MetricCard title="Investors" value={investors.length} subtext="profiles stored" />
-          <MetricCard title="Startups" value={startups.length} subtext="profiles stored" />
-          <MetricCard title="Matches" value={42} subtext="last 7 days" />
+          <MetricCard title="Investors" value={invCount} subtext="profiles stored" />
+          <MetricCard title="Startups" value={stCount} subtext="profiles stored" />
+          <MetricCard title="Matches" value={ws?.matches?.length ?? 42} subtext="last 7 days" />
           <MetricCard title="Active Agents" value={agents.filter(a=>a.status==='active').length} subtext={`Last run ${agents[0]?.last_run_at?.slice(0,10)}`} />
         </section>
 
