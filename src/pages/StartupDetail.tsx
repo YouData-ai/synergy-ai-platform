@@ -355,6 +355,15 @@ export default function StartupDetail() {
                 </SheetHeader>
                 <div className="mt-4 space-y-3">
                   <Button variant="premium" className="w-full">Generate Memo</Button>
+                  {(wsStartup as any)?.memo?.md_url ? (
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => window.open((wsStartup as any).memo.md_url, "_blank", "noopener,noreferrer")}
+                    >
+                      View Memo (MD)
+                    </Button>
+                  ) : null}
                   <Button variant="secondary" className="w-full">Open Q/A Agent</Button>
                   <Button variant="secondary" className="w-full">Upload to Data Room</Button>
 
