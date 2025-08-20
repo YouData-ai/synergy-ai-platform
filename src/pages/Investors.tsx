@@ -1,7 +1,6 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { Input } from "@/components/ui/input";
-import { investors as mockInvestors } from "@/data/investors";
 import { InvestorCard } from "@/components/cards/InvestorCard";
 import { useState, useMemo } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -37,8 +36,8 @@ export default function InvestorsPage() {
     return ws.investors.map(adapt);
   }, [ws]);
 
-  const source = liveInvestors ?? mockInvestors;
-  const filtered = source.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()));
+  const source = liveInvestors || [];
+  const filtered = source?.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
     <div>

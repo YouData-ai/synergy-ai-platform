@@ -6,8 +6,8 @@ export function useWorkspace() {
   return useQuery({
     queryKey: ["workspace"],
     queryFn: async (): Promise<Workspace> => {
-      const env = await api<WorkspaceEnvelope>("/api/workspace");
-      const ws = env.workspaces?.[0];
+      const env = await api<Workspace>("/api/workspace");
+      const ws = env;
       if (!ws) throw new Error("No workspace available");
       return ws;
     },

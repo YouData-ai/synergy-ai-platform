@@ -12,20 +12,12 @@ export type SlideFinding = {
   slide?: number; category: "Clarity"|"Story"|"Metrics"|"Design"|"Risk"|"Ask";
   severity: "Low"|"Medium"|"High"; issue: string; recommendation: string;
 };
-
-export type DeckAnalysis = {
-  schema_version: "1.0"; id: string; startup_id: string; document_id: string;
-  summary: string; strengths: string[]; improvements: SlideFinding[];
-  created_at: string; generator?: { model: string; run_id: string };
+export type MemoResp = {
+  latest_id: string;
+  md_url: string;
+  json_url: string;
+  generated_at: string;
 };
-
-export type Match = {
-  id: string; direction: "startup_to_investor"|"investor_to_startup";
-  startup_id: string; investor_id: string; score: number;
-  breakdown: { sector?: number; stage?: number; geo?: number; check?: number; thesis_semantic?: number; penalties?: number };
-  rationale: string; matching_reason?: string; intro?: string; created_at: string;
-};
-
 export type Startup = {
   id: string; company_name: string; website?: string;
   one_liner?: any; stage?: any; sectors?: any; geos?: any; icp?: any; gtm_strategy?: any;
@@ -52,11 +44,111 @@ export type Investor = {
 export type Workspace = { id: string; name: string; updated_at: string; startups: Startup[]; investors: Investor[]; matches: Match[] };
 export type WorkspaceEnvelope = { workspaces: Workspace[] };
 
-export type DeckAnalyzeResp = { ok: true; deck_analysis: DeckAnalysis } | ApiError;
-export type MarketSuggestResp = { startup_id: string; suggested_queries: string[] } | ApiError;
-export type MarketRunItem = { query: string; summary_bullets: string[]; citations: Array<{ title: string; url: string }> };
-export type MarketRunResp = { startup_id: string; ran: MarketRunItem[] } | ApiError;
+
 export type MarketAnalyzeResp = { query: string; results: Array<{ title: string; url: string; snippet?: string }>; summary?: string[] } | ApiError;
-export type MatchForStartupResp = { startup_id: string; total: number; matches: Array<Match> } | ApiError;
 export type ToughQ = { question: string; why_it_matters: string; suggested_answer_outline?: string };
-export type ToughQAResp = { ok: true; count: number } | ApiError;
+
+// Enhanced type definitions with better structure
+export interface DeckAnalysis {
+  id: string;
+  startup_id: string;
+  summary: string;
+  strengths: string[];
+  improvements: DeckImprovement[];
+  missing_sections: string[];
+  overall_score?: number;
+  created_at: string;
+}
+
+export interface DeckImprovement {
+  slide: number;
+  category: 'Clarity' | 'Metrics' | 'Risk' | 'Design' | 'Story' | 'Ask';
+  severity: 'Low' | 'Medium' | 'High';
+  issue: string;
+  recommendation: string;
+  priority_score?: number;
+}
+
+export interface MarketAnalysisBrief {
+  summary_bullets: string[];
+  market_size: {
+    estimate: string;
+    method?: string;
+    year?: number;
+  };
+  growth: {
+    cagr: string;
+    drivers: string[];
+    forecast_period?: string;
+  };
+  segments: string[];
+  key_players: string[];
+  moats_and_barriers: string[];
+  risks: string[];
+  open_questions: string[];
+  citations: Citation[];
+}
+
+export interface Citation {
+  title: string;
+  url: string;
+  snippet?: string;
+  relevance_score?: number;
+}
+
+export interface MarketRunItem {
+  query: string;
+  summary_bullets: string[];
+  citations: Citation[];
+  confidence_score?: number;
+  last_updated?: string;
+}
+
+export interface Match {
+  id: string;
+  direction: 'startup_to_investor' | 'investor_to_startup';
+  startup_id: string;
+  investor_id: string;
+  score: number;
+  breakdown: {
+    sector: number;
+    stage: number;
+    geo: number;
+    check: number;
+    thesis_semantic: number;
+    penalties: number;
+  };
+  rationale: string;
+  intro: string;
+  created_at: string;
+  investor_name?: string;
+  investor_focus?: string[];
+}
+
+export interface ToughQuestion {
+  question: string;
+  why_it_matters: string;
+  suggested_answer_outline?: string;
+  category?: 'Financial' | 'Market' | 'Product' | 'Competition' | 'Operations';
+  difficulty_level?: 'Medium' | 'Hard' | 'Expert';
+}
+
+// API Response wrappers with consistent structure
+export interface APIResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: ApiError;
+  meta?: {
+    timestamp: string;
+    request_id?: string;
+    processing_time_ms?: number;
+  };
+}
+
+// Updated response types
+export type DeckAnalyzeResp = DeckAnalysis;
+export type MarketSuggestResp = {
+  queries: string[]; };
+export type MarketRunResp = APIResponse<{ startup_id: string; ran: MarketRunItem[] }>;
+export type MatchForStartupResp = { startup_id: string; total: number; matches: Match[] };
+export type ToughQAResp = { tough_questions: ToughQuestion[] };

@@ -12,11 +12,11 @@ export function InvestorCard({ investor }: { investor: InvestorProfile }) {
       <CardHeader className="space-y-0 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {investor.logo ? (
+            {/* {investor.logo ? (
               <img src={investor.logo} alt={`${investor.name} logo`} className="h-8 w-8 rounded-sm" loading="lazy" />
             ) : (
               <div className="h-8 w-8 rounded-sm bg-secondary" />
-            )}
+            )} */}
             <div>
               <h3 className="font-medium leading-none">{investor.name}</h3>
               <p className="text-xs text-muted-foreground">{investor.type} • {investor.location}</p>

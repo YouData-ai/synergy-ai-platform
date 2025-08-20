@@ -1,7 +1,6 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { Input } from "@/components/ui/input";
-import { startups as mockStartups } from "@/data/startups";
 import { StartupCard } from "@/components/cards/StartupCard";
 import { useState, useMemo } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -41,7 +40,7 @@ export default function StartupsPage() {
     return ws.startups.map(adapt);
   }, [ws]);
 
-  const source = liveStartups ?? mockStartups;
+  const source = liveStartups;
   const filtered = source.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
 
   return (

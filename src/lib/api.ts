@@ -1,4 +1,4 @@
-const BASE = "https://2328e41543ab.ngrok-free.app";
+const BASE = "http://localhost:3001";
 
 function withBase(path: string) {
   if (/^https?:\/\//.test(path)) return path;
@@ -11,8 +11,12 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { "Content-Type": "application/json" },
     ...init,
   });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error((j as any)?.error || r.statusText);
+  const j = await r.json().catch((e) => {console.log(e)});
+  if (!r.ok) {
+    console.log(r)
+    console.log(j)
+    throw new Error((j as any)?.error || r.statusText);
+  }
   return j as T;
 }
 

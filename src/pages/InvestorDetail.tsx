@@ -1,8 +1,6 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { useParams, Link } from "react-router-dom";
-import { investors as mockInvestors } from "@/data/investors";
-import { startups as mockStartups } from "@/data/startups";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +9,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 export default function InvestorDetail() {
   const { id } = useParams();
   const { data: ws } = useWorkspace();
-  const investor = (ws?.investors?.find((i) => i.id === id) as any) ?? mockInvestors.find((i) => i.id === id);
+  const investor = (ws?.investors?.find((i) => i.id === id) as any);
 
   if (!investor) return (
     <div>
@@ -20,7 +18,7 @@ export default function InvestorDetail() {
     </div>
   );
 
-  const topMatches = [...(ws?.startups as any ?? mockStartups)]
+  const topMatches = [...(ws?.startups as any)]
     .map((s:any)=> ({...s, name: s.name ?? s.company_name ?? "", sectors: s.sectors?.value ?? s.sectors ?? [], match_score: s.match_score ?? 0 }))
     .sort((a: any, b: any) => (b.match_score || 0) - (a.match_score || 0))
     .slice(0, 5);
@@ -33,11 +31,11 @@ export default function InvestorDetail() {
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           <section>
             <div className="flex items-start gap-4">
-              {(investor as any).logo ? (
+              {/* {(investor as any).logo ? (
                 <img src={(investor as any).logo} alt={`${(investor as any).name} logo`} className="h-10 w-10 rounded" />
               ) : (
                 <div className="h-10 w-10 rounded bg-secondary" />
-              )}
+              )} */}
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight">{(investor as any).name}</h1>
                 <p className="text-sm text-muted-foreground">{(investor as any).type || "Investor"} • {(investor as any).location || (investor as any).geos?.[0] || (investor as any).geos?.value?.[0] || ""}</p>

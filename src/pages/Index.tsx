@@ -1,8 +1,6 @@
 import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { useWorkspace } from "@/hooks/useWorkspace";
-import { investors as mockInvestors } from "@/data/investors";
-import { startups as mockStartups } from "@/data/startups";
 
 const Index = () => {
   const { data: ws } = useWorkspace();
@@ -20,7 +18,7 @@ const Index = () => {
         <section className="mt-8">
           <h2 className="text-lg font-medium">Investors</h2>
           <ul className="mt-3 space-y-2 list-disc list-inside">
-            {(investors ?? mockInvestors).map((inv: any) => (
+            {(investors).map((inv: any) => (
               <li key={inv.id} className="text-sm">
                 <span className="font-medium">{inv.name}</span>
                 {inv.website && (
@@ -36,7 +34,7 @@ const Index = () => {
         <section className="mt-10">
           <h2 className="text-lg font-medium">Startups</h2>
           <ul className="mt-3 space-y-2 list-disc list-inside">
-            {(startups ?? mockStartups).map((s: any) => (
+            {(startups).map((s: any) => (
               <li key={s.id} className="text-sm">
                 <span className="font-medium">{s.company_name ?? s.name}</span>
                 { (s.website) && (
