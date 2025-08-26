@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { api, postJson } from "@/lib/api";
-import type { DeckAnalysis, MarketRunItem, Match, ToughQ, DeckAnalyzeResp, MarketSuggestResp, MarketRunResp, MatchForStartupResp, ToughQAResp, MemoResp } from "@/lib/api-types";
+import type { DeckAnalysis, MarketRunItem, Match, ToughQ, DeckAnalyzeResp, MarketSuggestResp, MarketRunResp, MatchForStartupResp, ToughQAResp, MemoResp, MarketRunItemA } from "@/lib/api-types";
 import { toast } from "@/components/ui/use-toast";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import type { Startup as ApiStartup } from "@/lib/api-types";
@@ -44,6 +44,7 @@ const [toughQs, setToughQs] = useState<ToughQ[]>([]);
 const [memo, setMemo] = useState<MemoResp | null>(null);
 const [memoOpen, setMemoOpen] = useState(false);
 const [loading, setLoading] = useState(false);
+const [loadingM, setLoadingM] = useState(false);
 
 // Update state when wsStartup changes
 useEffect(() => {
@@ -104,7 +105,7 @@ useEffect(() => {
   try {
     const rawMatches = ws?.matches?.filter((m: any) => m?.startup_id === id);
     if (Array.isArray(rawMatches)) {
-      const adaptedMatches = adaptMatches(rawMatches);
+      const adaptedMatches = adaptMatches(rawMatches, ws?.investors);
       setMatchResults(adaptedMatches);
     }
   } catch (error) {
@@ -148,6 +149,7 @@ const regenerateMemo = useCallback(async (): Promise<MemoResp> => {
 
 const handleMemoButton = useCallback(async () => {
   console.log(memo);
+  setLoadingM(true);
   if (memo?.md_url) {
     setMemoOpen(true);
     return;
@@ -155,6 +157,7 @@ const handleMemoButton = useCallback(async () => {
   // no memo yet → generate, then open
   const newMemo = await regenerateMemo();
   if (newMemo?.md_url) setMemoOpen(true);
+  setLoadingM(false);
 }, [memo, memo?.md_url, regenerateMemo]);
 
 
@@ -224,24 +227,60 @@ const handleMemoButton = useCallback(async () => {
     }
   }, [startup?.id]);
 
-  const handleRunMarket = useCallback(async (query) => {
+  const handleRunMarket = useCallback(async (query: string) => {
+    setLoading(true);
+    const operation = 'market-run-query';
+    
+    try {
+      const response = await 
+        postJson<MarketRunItemA>(`/api/market/for-startup/query`, { 
+            "query": query,
+            "maxResults": 5
+        })
+      ;
+      
+      if (response) {
+        setMarketRan((prev) => [
+          response,  // new results first
+          ...prev                // keep old ones below
+        ]);
+        toast({ 
+          description: `Market research completed.`,
+        });
+      } else {
+        throw new Error('Market research failed');
+      }
+    } catch (error: any) {
+      console.error('Market research failed:', error);
+      toast({ 
+        description: error.message || "Market research failed. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [startup?.id]);
+
+  const handleRunMarketAll = useCallback(async () => {
     setLoading(true);
     const operation = 'market-run';
     
     try {
       const response = await 
-        postJson<MarketRunResp>(`/api/market/analyze`, { 
-            "query": query,
-            "maxResults": 5,
-            "searchDepth": "advanced",     // optional: "basic" | "advanced"
-            "includeAnswers": true         // optional: ask Gemini to summarize
+        postJson<MarketRunResp>(`/api/market/for-startup`, { 
+            "topK": 4,
+            "maxResults": 4,
+            "startup_id": startup?.id
         })
       ;
       
       if (response.success && response.data) {
-        setMarketRan(response.data.ran);
+        setMarketRan((prev) => [
+          ...response.data.analyses,  // new results first
+          ...prev                // keep old ones below
+        ]);
         toast({ 
-          description: `Market research completed. Analyzed ${response.data.ran.length} areas.`,
+          description: `Market research completed. Analyzed ${response.data.analyses.length} areas.`,
         });
       } else {
         throw new Error(response.error?.error || 'Market research failed');
@@ -271,7 +310,7 @@ const handleMemoButton = useCallback(async () => {
         });
       
       if (response) {
-        setMatchResults(adaptMatches(response.matches));
+        setMatchResults(adaptMatches(response.matches, ws?.investors));
         const avgScore = response.matches.reduce((acc, m) => acc + m.score, 0) / response.matches.length;
         toast({ 
           description: `Found ${response.matches.length} investor matches (avg score: ${avgScore.toFixed(0)}).`,
@@ -760,11 +799,11 @@ const handleMemoButton = useCallback(async () => {
                       </svg>
                       Suggest Queries
                     </Button>
-                    <Button size="sm" className={`w-full ${loading ? "opacity-50 cursor-not-allowed" : ""}`} disabled={loading} onClick={handleRunMarket}>
+                    <Button size="sm" className={`w-full ${loading ? "opacity-50 cursor-not-allowed" : ""}`} disabled={loading} onClick={handleRunMarketAll}>
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
-                      Run Top-K
+                      Analyse
                     </Button>
                   </div>
                   {marketRan.length > 0 && (
@@ -777,9 +816,9 @@ const handleMemoButton = useCallback(async () => {
                     <h4 className="text-sm font-semibold mb-3">Suggested Research Queries</h4>
                     <div className="flex flex-wrap gap-2">
                       {marketSuggested.map((q, index) => (
-                        <Badge key={index} variant="outline" className="text-xs cursor-pointer hover:bg-gray-100">
-                          {q}
-                        </Badge>
+                          <Badge onClick={()=> handleRunMarket(q)} key={index} variant="outline" className="text-xs cursor-pointer hover:bg-gray-100">
+                            {q}
+                          </Badge>
                       ))}
                     </div>
                   </div>
@@ -1052,7 +1091,7 @@ const handleMemoButton = useCallback(async () => {
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Generate Investment Memo
+                    {loadingM? "Processing..": "Generate Investment Memo"}
                   </Button>
                 }
                 

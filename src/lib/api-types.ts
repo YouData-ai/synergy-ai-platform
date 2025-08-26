@@ -149,6 +149,11 @@ export interface APIResponse<T> {
 export type DeckAnalyzeResp = DeckAnalysis;
 export type MarketSuggestResp = {
   queries: string[]; };
-export type MarketRunResp = APIResponse<{ startup_id: string; ran: MarketRunItem[] }>;
+export type MarketRunItemA = {
+    query: string;
+    summary_bullets: string[];
+    citations: { title: string; url: string }[];
+  };
+export type MarketRunResp = APIResponse<{ analyses: MarketRunItemA[] }>;
 export type MatchForStartupResp = { startup_id: string; total: number; matches: Match[] };
 export type ToughQAResp = { tough_questions: ToughQuestion[] };

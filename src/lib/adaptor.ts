@@ -260,7 +260,7 @@ const safeString = (value: unknown, fallback = ""): string => {
   };
   
   // Enhanced matches adapter
-  const adaptMatches = (rawMatches: any[]) => {
+  const adaptMatches = (rawMatches: any[], investors: any[]) => {
     try {
       return safeArray(rawMatches)
         .map((match: any) => {
@@ -291,6 +291,10 @@ const safeString = (value: unknown, fallback = ""): string => {
               thesis_semantic: safeNumber(breakdown.thesis_semantic) ?? 0,
               penalties: safeNumber(breakdown.penalties) ?? 0,
             };
+
+            // 🔑 Find investor name by ID
+          const investor = investors.find((inv) => inv.id === investor_id);
+          const investor_name = investor ? safeString(investor.name) : investor_id;
   
             return {
               id,
@@ -302,7 +306,7 @@ const safeString = (value: unknown, fallback = ""): string => {
               rationale: safeString(match?.rationale, "No rationale provided"),
               intro: safeString(match?.intro, ""), // This might be empty initially
               created_at: safeString(match?.created_at, new Date().toISOString()),
-              investor_name: safeString(match?.investor_name), // Optional field
+              investor_name: investor_name, // Optional field
               investor_focus: safeArray<string>(match?.investor_focus), // Optional field
             };
           } catch (error) {

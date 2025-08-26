@@ -1,4 +1,4 @@
-const BASE = "http://localhost:3001";
+const BASE = "https://lvx-agent-demo.you-data.xyz";
 
 function withBase(path: string) {
   if (/^https?:\/\//.test(path)) return path;
