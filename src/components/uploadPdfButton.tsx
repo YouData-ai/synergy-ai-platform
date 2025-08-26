@@ -12,7 +12,7 @@ type Props = {
 export default function UploadPdfButton({
   startupId,
   kind = "deck",
-  apiBase = "http://localhost:3001",
+  apiBase = "https://lvx-agent-demo.you-data.xyz",
   onUploaded,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
