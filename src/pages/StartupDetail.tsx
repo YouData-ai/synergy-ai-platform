@@ -136,8 +136,14 @@ async function handleViewClick(url) {
 }
 
 const regenerateMemo = useCallback(async (): Promise<MemoResp> => {
+  toast({ 
+    description: `Memo generation started`,
+  });
   const data = await postJson<MemoResp>("/api/memo/from-startup", { startup_id: startup?.id });
   if (!data?.md_url) throw new Error("Memo generation failed");
+  toast({ 
+    description: `Memo generation completed`,
+  });
   setMemo(data);
   return data;
 }, [startup?.id]);
@@ -161,6 +167,9 @@ const handleMemoButton = useCallback(async () => {
     const operation = 'deck-analysis';
     
     try {
+      toast({ 
+        description: `Deck analysis started`,
+      });
       const response = await 
         postJson<DeckAnalyzeResp>(`/api/deck/suggest`, { startup_id: startup?.id })
       ;
@@ -193,6 +202,9 @@ const handleMemoButton = useCallback(async () => {
     const operation = 'market-suggest';
     
     try {
+      toast({ 
+        description: `Generating queries based on your startup context`,
+      });
       const response = await
         postJson(`/api/market/suggest`, { 
           startup_id: startup?.id, 
@@ -227,6 +239,9 @@ const handleMemoButton = useCallback(async () => {
     const operation = 'market-run-query';
     
     try {
+      toast({ 
+        description: `Market research started on query: ${query}`,
+      });
       const response = await 
         postJson<MarketRunItemA>(`/api/market/for-startup/query`, { 
             "query": query,
@@ -261,6 +276,9 @@ const handleMemoButton = useCallback(async () => {
     const operation = 'market-run';
     
     try {
+      toast({ 
+        description: `Identifying queries and getting you answers for them from the internet`,
+      });
       const response = await 
         postJson<MarketRunResp>(`/api/market/for-startup`, { 
             "topK": 4,
@@ -296,6 +314,9 @@ const handleMemoButton = useCallback(async () => {
     const operation = 'find-matches';
     
     try {
+      toast({ 
+        description: `Finding best investors for this startup`,
+      });
       const response = await 
         postJson<MatchForStartupResp>(`/api/match/for-startup`, { 
           startup_id: startup?.id, 
@@ -329,6 +350,9 @@ const handleMemoButton = useCallback(async () => {
     const operation = 'generate-qa';
     
     try {
+      toast({ 
+        description: `Generating some tough question investors might ask`,
+      });
       const response = await postJson<ToughQAResp>(`/api/qa/investor`, {startup_id: startup?.id});
       
       if (response) {
