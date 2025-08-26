@@ -33,8 +33,8 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="premium" size="sm">New Match</Button>
-          <Button variant="hero" size="sm">Run Agents</Button>
+          {/* <Button variant="premium" size="sm">New Match</Button>
+          <Button variant="hero" size="sm">Run Agents</Button> */}
         </div>
       </div>
     </header>

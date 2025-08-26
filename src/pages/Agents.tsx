@@ -65,14 +65,14 @@ function AgentCard({ card, onOpen }: { card: AgentCardVM; onOpen: () => void }) 
     <div className="rounded-2xl border p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="text-xl font-semibold">{card.name}</div>
-        <span className={`text-white text-sm px-3 py-1 rounded-full ${statusColor}`}>{card.status}</span>
+        <span className={`text-white text-sm px-3 py-1 rounded-full ${statusColor}`}>{card.status?.toUpperCase()}</span>
       </div>
       <div className="mt-1 text-sm text-slate-500">{card.protocol} • Last update {new Date(card.last_update_iso).toLocaleDateString()}</div>
-      <div className="mt-4 grid grid-cols-3 gap-4">
+      {/* <div className="mt-4 grid grid-cols-3 gap-4">
         <Metric label="Uptime" value={`${card.metrics.uptime_pct}%`} />
         <Metric label="Perf" value={String(card.metrics.perf_score)} />
         <Metric label="Latency" value={`${card.metrics.latency_ms} ms`} />
-      </div>
+      </div> */}
       <div className="mt-4 flex flex-wrap gap-2">
         {card.tags.map(t => <span key={t} className="rounded-full bg-slate-100 px-3 py-1 text-sm">{t}</span>)}
       </div>
@@ -93,14 +93,14 @@ function AgentDetail({ card, detail, controls }:{ card: AgentCardVM; detail: Age
       </SheetHeader>
 
       {/* Controls */}
-      <div className="mt-4 flex gap-2">
+      {/* <div className="mt-4 flex gap-2">
         {controls.actions.run_endpoint && <Button onClick={() => runEndpoint(controls.actions.run_endpoint!)}>Run</Button>}
         {controls.actions.monitor_url && <a className="btn" href={controls.actions.monitor_url}>Monitor</a>}
         {controls.actions.configure_url && <a className="btn" href={controls.actions.configure_url}>Configure</a>}
         {controls.actions.curl_example && (
           <Button variant="outline" onClick={() => navigator.clipboard.writeText(controls.actions.curl_example!)}>Copy cURL</Button>
         )}
-      </div>
+      </div> */}
 
       {/* IO + Logs */}
       <div className="mt-6 space-y-4">

@@ -478,9 +478,9 @@ export default function InvestorDetail() {
 
             {/* Action Buttons */}
             <div className="flex gap-3 mt-8">
-              <Button variant="default">Request Introduction</Button>
+              {/* <Button variant="default">Request Introduction</Button>
               <Button variant="secondary">Export Profile</Button>
-              <Button variant="outline">Add to Pipeline</Button>
+              <Button variant="outline">Add to Pipeline</Button> */}
             </div>
           </section>
 
@@ -529,7 +529,7 @@ export default function InvestorDetail() {
             </Sheet>
 
             {/* Quick Actions */}
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
@@ -553,7 +553,7 @@ export default function InvestorDetail() {
                   Add to Favorites
                 </Button>
               </CardContent>
-            </Card>
+            </Card> */}
           </aside>
         </div>
       </main>

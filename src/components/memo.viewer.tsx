@@ -77,13 +77,13 @@ export default function MemoModal({ open, onOpenChange, memo, onRegenerate }: Pr
             {memo?.latest_id ? `ID: ${memo.latest_id}` : ""}
           </div>
           <div className="flex items-center gap-2">
-            {memo?.json_url && (
+            {/* {memo?.json_url && (
               <Button variant="outline" size="sm" asChild>
                 <a href={memo.json_url} target="_blank" rel="noopener noreferrer">
                   View JSON
                 </a>
               </Button>
-            )}
+            )} */}
             <Button variant="outline" size="sm" onClick={() => setRawMode((v) => !v)}>
               {rawMode ? "Preview" : "Raw"}
             </Button>
@@ -102,7 +102,16 @@ export default function MemoModal({ open, onOpenChange, memo, onRegenerate }: Pr
             <pre className="text-xs whitespace-pre-wrap">{md || "No content"}</pre>
           ) : (
             <div className="prose prose-sm max-w-none dark:prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              // components={{
+              //   h1: ({ node, ...props }) => <h1 className="font-semibold text-2xl mt-4 mb-2" {...props} />,
+              //   h2: ({ node, ...props }) => <h2 className="font-semibold text-xl mt-4 mb-2" {...props} />,
+              //   h3: ({ node, ...props }) => <h3 className="font-semibold text-lg mt-3 mb-1" {...props} />,
+              //   strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+              //   // optional: add more if needed for lists, code blocks, etc.
+              // }}
+              >
                 {md || "No content"}
               </ReactMarkdown>
             </div>

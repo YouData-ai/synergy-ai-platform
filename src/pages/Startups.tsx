@@ -2,13 +2,15 @@ import { Seo } from "@/components/Seo";
 import { Header } from "@/components/Header";
 import { Input } from "@/components/ui/input";
 import { StartupCard } from "@/components/cards/StartupCard";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import type { Startup as ApiStartup } from "@/lib/api-types";
 import type { StartupProfile } from "@/data/startups";
+
 export default function StartupsPage() {
   const { data: ws } = useWorkspace();
   const [q, setQ] = useState("");
+  const [filtered, setDiltered] = useState([]);
 
   const liveStartups: StartupProfile[] | null = useMemo(() => {
     if (!ws?.startups) return null;
@@ -40,8 +42,11 @@ export default function StartupsPage() {
     return ws.startups.map(adapt);
   }, [ws]);
 
-  const source = liveStartups;
-  const filtered = source.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()));
+  useEffect(() => {
+    let filteredS = liveStartups?.filter((s) => s?.name?.toLowerCase().includes(q.toLowerCase()));
+    setDiltered(filteredS);
+  }, [liveStartups])
+  
 
   return (
     <div>
@@ -58,7 +63,7 @@ export default function StartupsPage() {
         </div>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((s) => (
+          {filtered?.map((s) => (
             <StartupCard key={s.id} startup={s} />
           ))}
         </div>
